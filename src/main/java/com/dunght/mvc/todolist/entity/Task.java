@@ -27,9 +27,6 @@ public class Task {
     @Column(name = "status")
     private String status;
 
-    @Column(name = "start_date")
-    private LocalDate startDate;
-
     @Column(name = "end_date")
     private LocalDate endDate;
 
@@ -38,6 +35,10 @@ public class Task {
 
     @Column(name = "note")
     private String note;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id") // Cột này sẽ lưu ID của người được giao việc
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "workspace_id")
