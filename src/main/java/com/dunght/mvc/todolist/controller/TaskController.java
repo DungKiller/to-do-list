@@ -5,6 +5,7 @@ import com.dunght.mvc.todolist.entity.Task;
 import com.dunght.mvc.todolist.entity.User;
 import com.dunght.mvc.todolist.entity.Workspace;
 import com.dunght.mvc.todolist.service.TaskService;
+import com.dunght.mvc.todolist.service.UserService;
 import com.dunght.mvc.todolist.service.WorkspaceService;
 import com.dunght.mvc.todolist.repository.UserRepository;
 import com.dunght.mvc.todolist.repository.WorkspaceRepository;
@@ -24,7 +25,7 @@ public class TaskController {
     @Autowired
     private WorkspaceService workspaceService;
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
     @Autowired
     private WorkspaceRepository workspaceRepository;
 
@@ -37,9 +38,12 @@ public class TaskController {
 
         Workspace workspace = workspaceService.getWorkspaceById(workspaceId);
         List<Task> tasks = taskService.getTasksByWorkspaceId(workspaceId);
+        List<Workspace> workspaces = workspaceService.getAllWorkspacesForUser(acc.getUserId());
         model.addAttribute("tasks", tasks);
         model.addAttribute("workspace", workspace);
         model.addAttribute("currentUser", acc);
+        model.addAttribute("workspaces", workspaces);
+        model.addAttribute("currentWorkspaceId", workspaceId);
         return "task";
     }
 
@@ -51,20 +55,49 @@ public class TaskController {
         }
 
         // Find the assigned user by username
-        User assignedUser = userRepository.findByUsername(taskDto.getUsername());
+        User assignedUser = userService.findByEmail(taskDto.getEmail());
         if (assignedUser == null) {
-            redirectAttributes.addFlashAttribute("error", "Không tìm thấy người dùng với username: " + taskDto.getUsername());
+            redirectAttributes.addFlashAttribute("error", "Không tìm thấy người dùng");
             return "redirect:/workspace/" + workspaceId + "/task";
         }
 
-        // Add the assigned user to the workspace members if not already a member
         Workspace workspace = workspaceService.getWorkspaceById(workspaceId);
-        if (!workspace.getMembers().contains(assignedUser)) {
-            workspace.getMembers().add(assignedUser);
-            workspaceRepository.save(workspace);
-        }
 
         taskService.createTask(taskDto, workspaceId, assignedUser.getUserId());
+        return "redirect:/workspace/" + workspaceId + "/task";
+    }
+
+    @PostMapping("/task/delete")
+    public String deleteTask(@RequestParam("taskId") Integer taskId, @RequestParam("workspaceId") Integer workspaceId, HttpSession session, RedirectAttributes redirectAttributes) {
+        User acc = (User) session.getAttribute("user");
+        if (acc == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            taskService.deleteTask(taskId, acc.getUserId());
+            redirectAttributes.addFlashAttribute("message", "Xóa task thành công");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        }
+
+        return "redirect:/workspace/" + workspaceId + "/task";
+    }
+
+    @PostMapping("/task/update")
+    public String updateTask(@RequestParam("taskId") Integer taskId, TaskDto taskDto, @RequestParam("workspaceId") Integer workspaceId, RedirectAttributes redirectAttributes, HttpSession session) {
+        User acc = (User) session.getAttribute("user");
+        if (acc == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            taskService.updateTask(taskId, taskDto, acc.getUserId());
+            redirectAttributes.addFlashAttribute("message", "Cập nhật task thành công");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        }
+
         return "redirect:/workspace/" + workspaceId + "/task";
     }
 }

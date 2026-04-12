@@ -9,4 +9,6 @@ public interface TaskService {
     List<Task> findByWorkspace_WorkspaceId(Integer workspaceId);
     List<Task> getTasksByWorkspaceId(Integer workspaceId);
     void createTask(TaskDto taskDto, Integer workspaceId, Integer userId);
+    void deleteTask(Integer taskId, Integer userId);
+    void updateTask(Integer taskId, TaskDto taskDto, Integer userId);
 }

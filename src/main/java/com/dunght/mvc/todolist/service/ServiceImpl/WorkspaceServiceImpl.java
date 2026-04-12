@@ -3,6 +3,7 @@ package com.dunght.mvc.todolist.service.ServiceImpl;
 import com.dunght.mvc.todolist.dto.WorkspaceDto;
 import com.dunght.mvc.todolist.entity.User;
 import com.dunght.mvc.todolist.entity.Workspace;
+import com.dunght.mvc.todolist.repository.TaskRepository;
 import com.dunght.mvc.todolist.repository.UserRepository;
 import com.dunght.mvc.todolist.repository.WorkspaceRepository;
 import com.dunght.mvc.todolist.service.WorkspaceService;
@@ -19,10 +20,17 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     private UserRepository userRepository;
     @Autowired
     private WorkspaceRepository workspaceRepository;
+    @Autowired
+    private TaskRepository taskRepository;
 
     @Override
     public List<Workspace> getWorkspacesByUserId(Integer userId) {
         return workspaceRepository.findAllByMembers_UserId(userId);
+    }
+
+    @Override
+    public List<Workspace> getAllWorkspacesForUser(Integer userId) {
+        return workspaceRepository.findByUserId(userId);
     }
 
     @Override
@@ -46,5 +54,17 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             workspaceRepository.save(workspace);
         }
 
+    }
+
+    @Override
+    @Transactional
+    public void deleteWorkspace(Integer workspaceId, Integer userId) {
+        Workspace workspace = workspaceRepository.findById(workspaceId).orElse(null);
+        if (workspace != null && workspace.getOwner().getUserId().equals(userId)) {
+            taskRepository.deleteByWorkspace_WorkspaceId(workspaceId);
+            workspaceRepository.delete(workspace);
+        } else {
+            throw new RuntimeException("Không có quyền xóa workspace này");
+        }
     }
 }

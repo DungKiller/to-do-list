@@ -40,6 +40,12 @@ public class AuthenticateController {
         return "redirect:/workspace";
     }
 
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
+    }
+
     @GetMapping("/signup")
     public String signupForm(Model model) {
         model.addAttribute("userDto", new UserDto());

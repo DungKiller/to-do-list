@@ -16,5 +16,5 @@ public class TaskDto {
     private LocalDate endDate;
     private String priority;
     private String note;
-    private String username;
+    private String email;
 }

@@ -39,6 +39,10 @@ public class TaskServiceImpl implements TaskService {
         User user = userRepository.findById(userId).orElse(null);
 
         if (workspace != null) {
+            if (!workspace.getMembers().contains(user)) {
+                workspace.getMembers().add(user);
+                workspaceRepository.save(workspace);
+            }
             Task task = new Task();
             task.setNote(taskDto.getNote());
             task.setPriority(taskDto.getPriority());
@@ -48,6 +52,37 @@ public class TaskServiceImpl implements TaskService {
             task.setWorkspace(workspace);
             task.setUser(user);
             taskRepository.save(task);
+        }
+    }
+
+    @Override
+    public void deleteTask(Integer taskId, Integer userId) {
+        Task task = taskRepository.findById(taskId).orElse(null);
+        if (task != null) {
+            taskRepository.delete(task);
+        } else {
+            throw new RuntimeException("Task không tồn tại");
+        }
+    }
+
+    @Override
+    public void updateTask(Integer taskId, TaskDto taskDto, Integer userId) {
+        Task task = taskRepository.findById(taskId).orElse(null);
+        if (task != null) {
+            // Find the assigned user by email
+            User assignedUser = userRepository.findByEmail(taskDto.getEmail());
+            if (assignedUser == null) {
+                throw new RuntimeException("Không tìm thấy người dùng");
+            }
+            task.setTitle(taskDto.getTitle());
+            task.setNote(taskDto.getNote());
+            task.setPriority(taskDto.getPriority());
+            task.setStatus(taskDto.getStatus());
+            task.setEndDate(taskDto.getEndDate());
+            task.setUser(assignedUser);
+            taskRepository.save(task);
+        } else {
+            throw new RuntimeException("Task không tồn tại");
         }
     }
 }

@@ -49,4 +49,22 @@ public class WorkspaceController {
 
         return "redirect:/workspace";
     }
+
+    @PostMapping("/workspace/delete")
+    public String deleteWorkspace(@RequestParam("workspaceId") Integer workspaceId, HttpSession session,
+                                  RedirectAttributes redirectAttributes) {
+        User acc = (User) session.getAttribute("user");
+        if (acc == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            workspaceService.deleteWorkspace(workspaceId, acc.getUserId());
+            redirectAttributes.addFlashAttribute("message", "Xóa workspace thành công");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        }
+
+        return "redirect:/workspace";
+    }
 }

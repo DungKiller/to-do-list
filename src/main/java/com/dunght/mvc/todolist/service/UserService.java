@@ -7,4 +7,6 @@ public interface UserService {
     User findByUsernameAndPassword(String username, String password);
 
     void createUser(UserDto userDto);
+
+    User findByEmail(String email);
 }

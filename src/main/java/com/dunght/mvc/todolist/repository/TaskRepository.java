@@ -14,4 +14,6 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
 
     @Query("SELECT t FROM Task t JOIN FETCH t.user WHERE t.workspace.workspaceId = :workspaceId")
     List<Task> findAllTasksWithUserByWorkspaceId(@Param("workspaceId") Integer workspaceId);
+
+    void deleteByWorkspace_WorkspaceId(Integer workspaceId);
 }
