@@ -75,8 +75,6 @@ public class AuthenticateController {
                 model.addAttribute("error", ex.getMessage());
                 return "signup";
             }
-
         }
-
     }
 }
